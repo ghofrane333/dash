@@ -26,21 +26,26 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
-        working-directory: ./Desktop/dash
 
       - name: Install dependencies
-        run: pip install -r ../../requirements.txt
-        working-directory: ./Desktop/dash
+        run: |
+          cd Desktop/dash
+          pip install -r requirements.txt
+
+      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
       - name: Zip artifact for deployment
-        run: zip -r release.zip ./*
-        working-directory: ./Desktop/dash
+        run: |
+          cd Desktop/dash
+          zip -r ../../release.zip . 
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: ./Desktop/dash/release.zip
+          path: |
+            release.zip
+            !venv/
 
   deploy:
     runs-on: ubuntu-latest
@@ -58,17 +63,10 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      # Azure Login step
-      - name: 'Azure Login'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      # Deploy to Azure Web App
-      - name: Deploy to Azure Web App
+      - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'dash'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D636EF85C64E40EF9229CECFD1D34D2C }}
