@@ -1,24 +1,11 @@
-# Fichiers de modèle et de données
-model/*.pkl
-model/*.csv
-
-# Fichiers et dossiers générés
-__pycache__/
+# Exclure les dossiers et fichiers non nécessaires
 *.pyc
-
-# Configuration de Streamlit
-.streamlit/
-
-# Environnement virtuel
-env/
-venv/
-.venv/
-
-# Fichiers de cache
+__pycache__/
+.env
 .DS_Store
-*.log
-*.cache
 
-# Dossier de configuration système
-.idea/
-.vscode/
+# Exclure les données et modèles volumineux
+data/
+model/
+*.pkl
+*.csv
