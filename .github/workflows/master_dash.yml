@@ -22,24 +22,26 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Navigate to project directory
+        working-directory: ./Desktop/dash
+
       - name: Create and start virtual environment
         run: |
           python -m venv venv
           source venv/bin/activate
 
-      - name: List project files (debugging step)
-        run: |
-          ls -R
-
       - name: Install dependencies
         run: pip install -r requirements.txt
-        
+
+      - name: List project files (debugging step)
+        run: |
+          ls -R .
+
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
       - name: Zip artifact for deployment
-        run: |
-          zip -r release.zip ./* 
-          # Make sure to include everything necessary, including the `model/` folder and `dash.py`.
+        run: zip -r release.zip ./* 
+          # Include all files in Desktop/dash, including model/ and dash.py.
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
@@ -69,4 +71,4 @@ jobs:
         with:
           app-name: 'dash'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D636EF85C64E40EF9229CECFD1D34D2C }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
