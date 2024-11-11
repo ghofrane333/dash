@@ -63,5 +63,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'dash'  # Nom de l'application
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}  # Profil de publication
+          app-name: 'dash'  # Nom de l'application principale
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}  # Profil de publication pour l'application principale
