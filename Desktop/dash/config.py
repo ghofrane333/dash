@@ -1,1 +1,1 @@
-app.config.from_object('app.config.Config')
+dash.config.from_object('dash.config.Config')
