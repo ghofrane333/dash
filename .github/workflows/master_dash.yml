@@ -24,7 +24,7 @@ jobs:
       # Installer les dépendances
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          cd Desktop/dash
           pip install -r requirements.txt
 
       # Zipper les fichiers pour le déploiement
