@@ -1,1 +1,1 @@
-web: python dash.py
+web: streamlit run dash.py --server.port=$PORT --server.enableCORS=false
