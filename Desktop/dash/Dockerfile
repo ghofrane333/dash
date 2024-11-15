@@ -1,17 +1,18 @@
-FROM python:3.9
+# Utiliser une image Python comme base
+FROM python:3.9-slim
 
-# Définir le répertoire de travail dans /app
-WORKDIR /dash
+# Définir le répertoire de travail
+WORKDIR /app
 
-# Copier les fichiers locaux dans le conteneur
-COPY . /dash
+# Copier les fichiers nécessaires
+COPY . /app
 
 # Installer les dépendances
-RUN pip install -r /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Exposer le port utilisé par l'API
-EXPOSE 5000
+# Exposer le port (Azure l'utilise automatiquement)
+EXPOSE 8000
 
 # Commande pour démarrer l'application
-CMD ["python", "dash.py"]
+CMD ["gunicorn", "dash:dash", "--bind", "0.0.0.0:8000"]
 
