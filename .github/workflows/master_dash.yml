@@ -34,7 +34,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: python-dash
+          name: python-app
           path: release.zip
 
   deploy:
@@ -47,7 +47,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: python-dash
+          name: python-app
 
       - name: Unzip artifact
         run: unzip release.zip
@@ -56,4 +56,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'dash'  # Nom de votre application Azure
-          publish-profile: ${{ secrets.DASH }}  # Secret contenant le profil de publication          
+          publish-profile: ${{ secrets.DASH }}  # Secret contenant le profil de publication  
+          package: '.'
+          
