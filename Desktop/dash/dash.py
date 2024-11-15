@@ -184,6 +184,6 @@ def main():
             plot_client_comparison(st.session_state.data, selected_feature)
 
 
-if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 8000))  # Changer ici pour 8000
-    dash.run(host='0.0.0.0', port=port)
+if __name__ == '__main__':
+    dash.run_server(host='0.0.0.0', port=8000, debug=False)
+
