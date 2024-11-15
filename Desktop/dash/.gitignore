@@ -1,28 +1,43 @@
-# Environnements virtuels
-venv/
-env/
-
-# Fichiers de configuration locaux
-*.env
-
-# Cache Python
+# Fichiers et dossiers Python
 __pycache__/
 *.py[cod]
-*.so
-
-# Données sensibles ou volumineuses
-*.pkl
-*.csv
-
-# Streamlit
-.streamlit/
-
-# Logs et fichiers temporaires
+*.egg-info/
+*.egg
+*.pyo
+*.pyd
 *.log
-*.tmp
-.DS_Store
 
-# Configuration de l'IDE
-.idea/
-.vscode/
-*.iml
+# Environnements virtuels
+venv/
+.env/
+.venv/
+env/
+ENV/
+
+# Fichiers de configuration et secrets
+*.env
+config.py
+
+# Dépendances Python
+*.lock
+*.zip
+*.tar.gz
+*.whl
+pip-log.txt
+
+# Fichiers et dossiers générés
+*.sqlite3
+instance/
+db.sqlite3
+staticfiles/
+mediafiles/
+
+# Dossiers de Jupyter Notebook
+.ipynb_checkpoints/
+
+# Cache et fichiers temporaires
+*.bak
+*.swp
+*.tmp
+*.DS_Store
+Thumbs.db
