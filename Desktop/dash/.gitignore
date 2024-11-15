@@ -1,11 +1,28 @@
-# Exclure les dossiers et fichiers non nécessaires
-*.pyc
-__pycache__/
-.env
-.DS_Store
+# Environnements virtuels
+venv/
+env/
 
-# Exclure les données et modèles volumineux
-data/
-model/
+# Fichiers de configuration locaux
+*.env
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Données sensibles ou volumineuses
 *.pkl
 *.csv
+
+# Streamlit
+.streamlit/
+
+# Logs et fichiers temporaires
+*.log
+*.tmp
+.DS_Store
+
+# Configuration de l'IDE
+.idea/
+.vscode/
+*.iml
