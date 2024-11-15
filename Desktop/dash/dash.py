@@ -7,9 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 import shap
-from flask import Flask
 
-dash = Flask(__name__)
 # Charger le modèle
 model_path = os.path.join(os.path.dirname(__file__), 'model', 'lgbm_modelee.pkl')
 model = joblib.load(model_path)
