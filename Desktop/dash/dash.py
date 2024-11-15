@@ -8,6 +8,9 @@ import seaborn as sns
 import plotly.express as px
 import shap
 
+app = dash(__name__)
+
+
 # Charger le modèle
 model_path = os.path.join(os.path.dirname(__file__), 'model', 'lgbm_modelee.pkl')
 model = joblib.load(model_path)
