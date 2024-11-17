@@ -1,4 +1,4 @@
-name: Build and deploy Python app to Azure Web App - dash
+name: Build and deploy Python app to Azure Web App - appdash
 
 on:
   push:
@@ -55,6 +55,6 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'dash'  # Nom de votre application Azure
-          publish-profile: ${{ secrets.DASH }}  # Secret contenant le profil de publication  
+          app-name: 'appdash'  # Nom de votre application Azure
+          publish-profile: ${{ secrets.AZURE}}  # Secret contenant le profil de publication  
           package: 'Desktop/dash'
