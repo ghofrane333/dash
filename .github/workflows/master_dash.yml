@@ -31,6 +31,7 @@ jobs:
       - name: Zip artifact for deployment
         run: zip -r release.zip .
 
+      # Télécharger l'artefact zippé
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -44,17 +45,17 @@ jobs:
       name: 'Production'
 
     steps:
+      # Télécharger l'artefact pour le déploiement
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: python-app
 
-      - name: Unzip artifact
-        run: unzip release.zip
-
+      # Déployer sur Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'appdash'  # Nom de votre application Azure
-          publish-profile: ${{ secrets.AZURE}}  # Secret contenant le profil de publication  
-          package: 'Desktop/dash'
+          app-name: 'appdash'  # Nom de l'application Azure
+          publish-profile: ${{ secrets.AZURE }}  # Secret contenant le profil de publication
+          package: release.zip
+
