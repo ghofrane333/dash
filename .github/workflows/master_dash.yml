@@ -27,13 +27,10 @@ jobs:
           cd Desktop/dash
           pip install -r requirements.txt
 
-
       # Zipper les fichiers pour le déploiement
       - name: Zip artifact for deployment
-        run: |
-          zip -r release.zip .
+        run: zip -r release.zip .
 
-      # Télécharger le fichier zippé comme artefact
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -47,16 +44,17 @@ jobs:
       name: 'Production'
 
     steps:
-      # Télécharger l'artefact zippé depuis la phase de build
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: python-app
 
-      # Déployer sur Azure Web App
+      - name: Unzip artifact
+        run: unzip release.zip
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'dash'  # Nom de l'application Azure
-          publish-profile: ${{ secrets.DASH }}  # Profil de publication stocké comme secret GitHub
-          package: release.zip
+          app-name: 'dash'  # Nom de votre application Azure
+          publish-profile: ${{ secrets.DASH }}  # Secret contenant le profil de publication  
+          package: 'Desktop/dash'
