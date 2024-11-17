@@ -8,8 +8,6 @@ import seaborn as sns
 import plotly.express as px
 import shap
 
-app = dash(__name__)
-
 
 # Charger le modèle
 model_path = os.path.join(os.path.dirname(__file__), 'model', 'lgbm_modelee.pkl')
@@ -186,7 +184,6 @@ def main():
             st.subheader(f"Comparaison des caractéristiques des clients par rapport à {selected_feature}")
             plot_client_comparison(st.session_state.data, selected_feature)
 
-
 if __name__ == '__main__':
-    dash.run_server(host='0.0.0.0', port=8000, debug=False)
+    main()
 
