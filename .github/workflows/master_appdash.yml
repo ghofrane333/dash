@@ -57,5 +57,5 @@ jobs:
         with:
           app-name: 'appdash'  # Nom de l'application Azure
           publish-profile: ${{ secrets.AZURE }}  # Secret contenant le profil de publication
-          package: 'Desktop/dash'
+          package: '.'
 
