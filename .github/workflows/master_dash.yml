@@ -24,7 +24,9 @@ jobs:
       # Installer les dépendances
       - name: Install dependencies
         run: |
+          cd Desktop/dash
           pip install -r requirements.txt
+
 
       # Zipper les fichiers pour le déploiement
       - name: Zip artifact for deployment
