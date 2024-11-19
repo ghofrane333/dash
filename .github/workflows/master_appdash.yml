@@ -55,6 +55,8 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'appdash'  # Nom de votre application Azure
-          publish-profile: ${{ secrets.AZURE }}  # Secret contenant le profil de publication  
+        app-name: 'appdash/h6cpeaawh9c5gjf0'  # Déployer sur le slot spécifique
+        publish-profile: ${{ secrets.AZURE }}  # Secret contenant le profil de publication
+        package: 'Desktop/dash'  # Répertoire contenant les fichiers de l'application après le dézippage
+ 
           package: 'Desktop/dash' # Répertoire contenant les fichiers de l'application après le dézippage
