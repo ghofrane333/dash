@@ -60,3 +60,5 @@ jobs:
           publish-profile: ${{ secrets.FINAL }}  # Secret Azure contenant le profil de publication
           package: 'Desktop/dash'  # Répertoire contenant les fichiers de l'application après le dézippage
 
+          
+
