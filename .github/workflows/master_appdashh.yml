@@ -70,7 +70,7 @@ jobs:
         with:
           app-name: 'appdashh'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.APPS}}
+          ublish-profile: ${{ secrets.APP }}
           package: 'Desktop/dash'  # Répertoire contenant les fichiers de l'application après le dézippage
 
           
