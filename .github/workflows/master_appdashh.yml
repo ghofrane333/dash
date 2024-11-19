@@ -27,8 +27,12 @@ jobs:
           python -m venv venv
           source venv/bin/activate
       
+      # Installer les dépendances
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          cd Desktop/dash
+          pip install -r requirements.txt
+
         
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
@@ -66,4 +70,7 @@ jobs:
         with:
           app-name: 'appdashh'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_EB9F93A2C4A24351B72207698EB7187A }}
+          publish-profile: ${{ secrets.APPS}}
+          package: 'Desktop/dash'  # Répertoire contenant les fichiers de l'application après le dézippage
+
+          
