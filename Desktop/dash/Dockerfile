@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-WORKDIR /Desktop/dash
+WORKDIR /app
 
 COPY requirements.txt .
 
