@@ -1,12 +1,12 @@
+import streamlit as st
 import joblib
 import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
 import shap
-from flask import Flask, render_template, request, jsonify
-
-app = Flask(__name__)
 
 # Charger le modèle
 model_path = os.path.join(os.path.dirname(__file__), 'model', 'lgbm_modelee.pkl')
@@ -41,6 +41,18 @@ def verifier_donnees_client(df, ID, model):
     
     return X, None
 
+# Afficher les informations client
+def display_client_info(client, df):
+    idx_client = df.index[df['SK_ID_CURR'] == client][0]
+    st.sidebar.markdown("### Informations du client sélectionné")
+    st.sidebar.markdown(f"**ID client :** {client}")
+    st.sidebar.markdown(f"**Sexe :** {df.loc[idx_client, 'CODE_GENDER']}")
+    st.sidebar.markdown(f"**Âge :** {df.loc[idx_client, 'AGE']}")
+    st.sidebar.markdown(f"**Statut familial :** {df.loc[idx_client, 'NAME_FAMILY_STATUS']}")
+    st.sidebar.markdown(f"**Enfants :** {df.loc[idx_client, 'CNT_CHILDREN']}")
+    st.sidebar.markdown(f"**Statut professionnel :** {df.loc[idx_client, 'NAME_INCOME_TYPE']}")
+    st.sidebar.markdown(f"**Niveau d'études :** {df.loc[idx_client, 'NAME_EDUCATION_TYPE']}")
+    return idx_client
 
 # Effectuer la prédiction
 def effectuer_prediction(model, X, seuil=0.625):
@@ -50,6 +62,19 @@ def effectuer_prediction(model, X, seuil=0.625):
         return probability_default_payment, prediction
     except Exception as e:
         return None, str(e)
+
+# Afficher une jauge de score
+def afficher_jauge(score, seuil):
+    fig, ax = plt.subplots()
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    color = 'red' if score >= seuil else 'green'
+    ax.barh([0], [score], color=color)
+    ax.text(score, 0, f"{score:.2f}", ha='center', va='center', color='white', fontsize=12)
+    ax.set_xticks(np.arange(0, 1.1, 0.1))
+    ax.set_yticks([])
+    ax.set_title("Probabilité de défaut de paiement", fontsize=14)
+    st.pyplot(fig)
 
 # Fonction pour créer l'explainer SHAP et calculer les valeurs SHAP
 def compute_shap_values(model, data):
@@ -67,58 +92,81 @@ def get_top_features(shap_values, data, top_n=20):
     importances = mean_shap_values[top_features]
     return features, importances
 
-# Fonction pour afficher les caractéristiques les plus importantes avec SHAP
+# Fonction pour afficher les caractéristiques les plus importantes
+def display_top_features(features, importances):
+    st.write("### Top caractéristiques les plus importantes")
+    for feature, importance in zip(features, importances):
+        st.write(f"- {feature}: {importance:.4f}")
+
+# Fonction pour visualiser les importances des caractéristiques avec SHAP
 def plot_feature_importance(features, importances):
     plt.figure(figsize=(10, 8))
     plt.barh(features, importances, color='skyblue')
     plt.xlabel('Valeur d\'importance moyenne (valeurs SHAP)', fontsize=14)
     plt.title('Top Importances des Caractéristiques (Moyenne SHAP)', fontsize=16)
     plt.gca().invert_yaxis()
-    img_path = "static/feature_importance.png"
-    plt.savefig(img_path)
-    plt.close()
-    return img_path
+    st.pyplot(plt)
+
+def plot_waterfall(shap_values, sample_index):
+    if 0 <= sample_index < len(shap_values):
+        fig, ax = plt.subplots()
+        shap.plots.waterfall(shap_values[sample_index], show=False)
+        plt.title("Graphique en cascade pour le client", fontsize=16)
+        plt.tight_layout()
+        st.pyplot(fig)
+    else:
+        st.error(f"L'indice {sample_index} est hors des limites. Veuillez sélectionner un indice valide.")
 
 # Fonction pour afficher un résumé des valeurs SHAP pour toutes les données
 def plot_summary(shap_values, data, feat_number=20):
     plt.figure()
     shap.summary_plot(shap_values, data, plot_type="bar", max_display=feat_number, color_bar=False)
-    img_path = "static/shap_summary.png"
-    plt.savefig(img_path)
-    plt.close()
-    return img_path
+    st.pyplot(plt)
 
-# Route pour l'affichage du formulaire et la prédiction
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        client_id = int(request.form['client_id'])
-        X, erreur = verifier_donnees_client(df, client_id, model)
+# Fonction pour comparer les caractéristiques des clients
+def plot_client_comparison(df, feature):
+    fig = px.histogram(df, x=feature, title=f'Comparaison des {feature} pour tous les clients')
+    st.plotly_chart(fig)
+
+# Fonction principale de l'application Streamlit
+def main():
+    st.title("Application de Prédiction de Crédit")
+    st.markdown("Cette application permet de prédire l'approbation d'un prêt et d'analyser les caractéristiques importantes.")
+    
+    if 'data' not in st.session_state:
+        st.session_state.data = df.copy()
+    
+    unique_features = ['CODE_GENDER', 'NAME_FAMILY_STATUS', 'NAME_INCOME_TYPE', 'NAME_EDUCATION_TYPE']
+    selected_feature = st.selectbox("Sélectionnez une caractéristique pour la comparaison :", unique_features)
+
+    ID = st.number_input("Entrez l'ID du client :", min_value=100001)
+
+    if st.button("Prédire"):
+        X, erreur = verifier_donnees_client(st.session_state.data, ID, model)
         if erreur:
-            return render_template("index.html", erreur=erreur)
+            st.error(erreur)
+        else:
+            idx_client = display_client_info(ID, st.session_state.data)
+            
+            probability_default_payment, prediction = effectuer_prediction(model, X)
+            afficher_jauge(probability_default_payment, 0.625)
+            
+            st.success(prediction)
 
-        # Afficher les informations du client
-        client_data = df[df['SK_ID_CURR'] == client_id].iloc[0]
+            df_73_copy =df_73[df_73['SK_ID_CURR'] == ID].drop(['SK_ID_CURR'], axis=1)
 
-        # Effectuer la prédiction
-        probability_default_payment, prediction = effectuer_prediction(model, X)
+            shap_values = compute_shap_values(model, df_73_copy)
+            features, importances = get_top_features(shap_values, st.session_state.data, top_n=20)
+            
+            display_top_features(features, importances)
+            plot_feature_importance(features, importances)
 
-        # Calculer les valeurs SHAP
-        df_73_copy = df_73[df_73['SK_ID_CURR'] == client_id].drop(['SK_ID_CURR'], axis=1)
-        shap_values = compute_shap_values(model, df_73_copy)
+            sample_ind = st.session_state.data.index[st.session_state.data['SK_ID_CURR'] == ID][0]
+            plot_waterfall(shap_values, sample_ind)
+            plot_summary(shap_values, df_73_copy)
 
-        features, importances = get_top_features(shap_values, df, top_n=20)
-        feature_importance_img = plot_feature_importance(features, importances)
-        shap_summary_img = plot_summary(shap_values, df_73_copy)
-
-        return render_template("index.html", 
-                               client_data=client_data, 
-                               prediction=prediction, 
-                               probability=probability_default_payment,
-                               feature_importance_img=feature_importance_img,
-                               shap_summary_img=shap_summary_img)
-
-    return render_template("index.html")
+            st.subheader(f"Comparaison des caractéristiques des clients par rapport à {selected_feature}")
+            plot_client_comparison(st.session_state.data, selected_feature)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    main()
