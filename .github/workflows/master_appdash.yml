@@ -57,7 +57,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'webdash'  # Nom de l'application App Service
-          publish-profile: ${{ secrets.FINAL }}  # Secret Azure contenant le profil de publication
+          publish-profile: ${{ secrets.DASH }}  # Secret Azure contenant le profil de publication
           package: 'Desktop/dash'  # Répertoire contenant les fichiers de l'application après le dézippage
 
           
