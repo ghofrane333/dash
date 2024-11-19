@@ -1,4 +1,4 @@
-name: Build and deploy Python app to Azure Web App - appdash
+name: Build and deploy Python app to Azure Web App - webdash
 
 on:
   push:
