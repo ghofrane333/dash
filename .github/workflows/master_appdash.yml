@@ -52,10 +52,11 @@ jobs:
       - name: Unzip artifact
         run: unzip release.zip
 
+      # 4. Déployer directement sur Azure
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-         app-name: 'appdash/h6cpeaawh9c5gjf0'  # Déployer sur le slot spécifique
-         publish-profile: ${{ secrets.AZURE }}  # Secret contenant le profil de publication
-         package: 'Desktop/dash'  # Répertoire contenant les fichiers de l'application après le dézippage
+          app-name: 'appdash'  # Nom de l'application App Service
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}  # Secret Azure contenant le profil de publication
+          package: 'Desktop/dash'  # Répertoire contenant les fichiers de l'application après le dézippage
 
