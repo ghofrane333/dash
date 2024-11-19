@@ -8,6 +8,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Exposer le port que votre application écoute
+EXPOSE 8000
+
 CMD ["streamlit", "run", "dash.py"]
 
 
