@@ -49,6 +49,12 @@ jobs:
         with:
           name: python-app
 
+      # Créer le répertoire Desktop/dash si nécessaire
+      - name: Create directory for extraction
+        run: |
+          mkdir -p Desktop/dash
+
+      # Décompresser l'artefact
       - name: Unzip artifact
         run: unzip release.zip -d Desktop/dash
 
