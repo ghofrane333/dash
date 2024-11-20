@@ -1,8 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
-name: Build and deploy Python app to Azure Web App - appdashh
+name: Build and deploy Python app to Azure Web App - webdash
 
 on:
   push:
@@ -15,62 +11,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # Cloner le dépôt Git
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Python version
+      # Installer Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
-      - name: Create and start virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-      
       # Installer les dépendances
       - name: Install dependencies
         run: |
           cd Desktop/dash
           pip install -r requirements.txt
 
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
-
+      # Zipper les fichiers pour le déploiement
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: zip -r release.zip .
 
-      - name: Upload artifact for deployment jobs
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: |
-            release.zip
-            !venv/
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     environment:
       name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
+
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: python-app
 
-      - name: Unzip artifact for deployment
+      - name: Unzip artifact
         run: unzip release.zip
 
-      
-      - name: 'Deploy to Azure Web App'
+      # 4. Déployer directement sur Azure
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
         with:
-          app-name: 'appdashh'
-          slot-name: 'Production'
-          publish-profile: ${{ secrets.APP }}
+          app-name: 'appdashh'  # Nom de l'application App Service
+          publish-profile: ${{ secrets.APP }}  # Secret Azure contenant le profil de publication
           package: 'Desktop/dash'  # Répertoire contenant les fichiers de l'application après le dézippage
-
-          
