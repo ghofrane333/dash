@@ -1,4 +1,4 @@
-name: Build and deploy Python app to Azure Web App - webdash
+name: Build and deploy Python app to Azure Web App - appdashh
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
 
       # Zipper les fichiers pour le déploiement
       - name: Zip artifact for deployment
-        run: zip -r release.zip Desktop/dash/*
+        run: zip -r release.zip .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -49,20 +49,15 @@ jobs:
         with:
           name: python-app
 
-      # Créer le répertoire Desktop/dash si nécessaire
-      - name: Create directory for extraction
-        run: |
-          mkdir -p Desktop/dash
-
-      # Décompresser l'artefact
       - name: Unzip artifact
-        run: unzip release.zip -d Desktop/dash
+        run: unzip release.zip
 
-      # Déployer directement sur Azure
+      # 4. Déployer directement sur Azure
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'appdashh'  # Nom de l'application App Service
           publish-profile: ${{ secrets.APP }}  # Secret Azure contenant le profil de publication
-          package: 'Desktop/dash'  # Répertoire contenant les fichiers de l'application après dézippage
+          package: 'Desktop/dash'  # Répertoire contenant les fichiers de l'application après le dézippage
+
           
