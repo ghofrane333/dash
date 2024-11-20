@@ -8,6 +8,8 @@ import seaborn as sns
 import plotly.express as px
 import shap
 
+
+
 # Charger le modèle
 model_path = os.path.join(os.path.dirname(__file__), 'model', 'lgbm_modelee.pkl')
 model = joblib.load(model_path)
@@ -40,6 +42,7 @@ def verifier_donnees_client(df, ID, model):
         return None, f"Nombre de caractéristiques incorrect: attendu {model.n_features_in_}, reçu {X.shape[1]}"
     
     return X, None
+
 
 # Afficher les informations client
 def display_client_info(client, df):
@@ -128,6 +131,16 @@ def plot_client_comparison(df, feature):
     fig = px.histogram(df, x=feature, title=f'Comparaison des {feature} pour tous les clients')
     st.plotly_chart(fig)
 
+
+
+# Fonction pour afficher les informations du client
+def modify_client_info(client_id, data):
+    st.write("### Informations du client")
+    st.write(data[data['SK_ID_CURR'] == client_id])
+
+
+
+
 # Fonction principale de l'application Streamlit
 def main():
     st.title("Application de Prédiction de Crédit")
@@ -142,6 +155,7 @@ def main():
     ID = st.number_input("Entrez l'ID du client :", min_value=100001)
 
     if st.button("Prédire"):
+        print('stdata', st.session_state.data.head())
         X, erreur = verifier_donnees_client(st.session_state.data, ID, model)
         if erreur:
             st.error(erreur)
@@ -156,6 +170,8 @@ def main():
             df_73_copy =df_73[df_73['SK_ID_CURR'] == ID].drop(['SK_ID_CURR'], axis=1)
 
             shap_values = compute_shap_values(model, df_73_copy)
+           
+        
             features, importances = get_top_features(shap_values, st.session_state.data, top_n=20)
             
             display_top_features(features, importances)
@@ -164,6 +180,7 @@ def main():
             sample_ind = st.session_state.data.index[st.session_state.data['SK_ID_CURR'] == ID][0]
             plot_waterfall(shap_values, sample_ind)
             plot_summary(shap_values, df_73_copy)
+
 
             st.subheader(f"Comparaison des caractéristiques des clients par rapport à {selected_feature}")
             plot_client_comparison(st.session_state.data, selected_feature)
