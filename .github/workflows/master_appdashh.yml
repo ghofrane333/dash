@@ -64,4 +64,5 @@ jobs:
         with:
           app-name: 'appdashh'  # Nom de l'application App Service
           publish-profile: ${{ secrets.APP }}  # Secret Azure contenant le profil de publication
-          package: './Desktop/dash'  # Répertoire contenant les fichiers de l'application après dézippage
+          package: 'Desktop/dash'  # Répertoire contenant les fichiers de l'application après dézippage
+          
