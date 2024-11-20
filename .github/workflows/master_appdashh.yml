@@ -29,7 +29,7 @@ jobs:
 
       # Zipper les fichiers pour le déploiement
       - name: Zip artifact for deployment
-        run: zip -r release.zip .
+        run: zip -r release.zip Desktop/dash/*
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -50,12 +50,12 @@ jobs:
           name: python-app
 
       - name: Unzip artifact
-        run: unzip release.zip
+        run: unzip release.zip -d Desktop/dash
 
-      # 4. Déployer directement sur Azure
+      # Déployer directement sur Azure
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'appdashh'  # Nom de l'application App Service
           publish-profile: ${{ secrets.APP }}  # Secret Azure contenant le profil de publication
-          package: 'Desktop/dash'  # Répertoire contenant les fichiers de l'application après le dézippage
+          package: './Desktop/dash'  # Répertoire contenant les fichiers de l'application après dézippage
