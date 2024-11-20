@@ -13,4 +13,4 @@ COPY . .
 EXPOSE 8000
 
 # Commande de démarrage
-CMD ["streamlit", "run", "dash.py", "--server.port=8000", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "dash.py", "--server.port=8000", "--server.enableCORS=false", "--server.address=0.0.0.0"]
