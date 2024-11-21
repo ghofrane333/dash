@@ -1,3 +1,4 @@
+
 FROM python:3.9-slim
 
 # Définir le répertoire de travail
@@ -5,11 +6,14 @@ WORKDIR /Desktop/dash
 
 # Copier les fichiers nécessaires dans l'image
 COPY requirements.txt .
+
+# Installer les dépendances
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copier le reste des fichiers de l'application
 COPY . .
 
-# Exposer le port utilisé par Streamlit
+# Exposer le port attendu par Azure
 EXPOSE 80
 
 # Commande de démarrage
