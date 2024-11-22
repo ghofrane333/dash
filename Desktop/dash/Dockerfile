@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Exposer le port attendu par Azure
-EXPOSE 80
+EXPOSE 8000
 
 # Commande de démarrage
-CMD ["streamlit", "run", "dash.py", "--server.port=80", "--server.enableCORS=false", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "dash.py", "--server.port=8000", "--server.enableCORS=false", "--server.address=0.0.0.0"]
