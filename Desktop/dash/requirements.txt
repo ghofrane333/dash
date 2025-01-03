@@ -1,7 +1,7 @@
 streamlit==1.17.0
 joblib==1.2.0
 pandas==1.5.1
-numpy==1.23.5  # Ajoutez une version spécifique de numpy
+numpy==1.24.0  
 matplotlib==3.5.2
 seaborn==0.11.2
 plotly==5.4.0
