@@ -1,10 +1,11 @@
 streamlit==1.17.0
 joblib==1.2.0
 pandas==1.5.1
-numpy
+numpy==1.23.5  # Ajoutez une version spécifique de numpy
 matplotlib==3.5.2
 seaborn==0.11.2
 plotly==5.4.0
 shap==0.41.0
 gunicorn==20.1.0
-llvmlite==0.36.1
+llvmlite>=0.40.0  # Mettez à jour la version de llvmlite pour la compatibilité
+
