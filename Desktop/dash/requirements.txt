@@ -7,4 +7,4 @@ seaborn
 plotly
 shap
 gunicorn
-
+lightgbm
