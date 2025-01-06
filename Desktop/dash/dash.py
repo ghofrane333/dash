@@ -57,7 +57,7 @@ def display_client_info(client, df):
     return idx_client
 
 # Effectuer la prédiction
-def effectuer_prediction(model, X, seuil=0.7):
+def effectuer_prediction(model, X, seuil=0.55):
     try:
         probability_default_payment = model.predict_proba(X)[:, 1][0]
         prediction = "Prêt NON Accordé, risque de défaut" if probability_default_payment >= seuil else "Prêt Accordé"
@@ -162,7 +162,7 @@ def main():
             idx_client = display_client_info(ID, st.session_state.data)
             
             probability_default_payment, prediction = effectuer_prediction(model, X)
-            afficher_jauge(probability_default_payment, 0.7)
+            afficher_jauge(probability_default_payment, 0.55)
             
             st.success(prediction)
 
