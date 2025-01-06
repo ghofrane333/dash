@@ -68,15 +68,14 @@ def effectuer_prediction(model, X, seuil=0.625):
 # Afficher une jauge de score
 def afficher_jauge(score, seuil):
     fig, ax = plt.subplots()
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
     color = 'red' if score >= seuil else 'green'
     ax.barh([0], [score], color=color)
+    ax.set_xlim(0, 1)
     ax.text(score, 0, f"{score:.2f}", ha='center', va='center', color='white', fontsize=12)
-    ax.set_xticks(np.arange(0, 1.1, 0.1))
-    ax.set_yticks([])
     ax.set_title("Probabilité de défaut de paiement", fontsize=14)
     st.pyplot(fig)
+
+
 
 # Fonction pour créer l'explainer SHAP et calculer les valeurs SHAP
 def compute_shap_values(model, data):
@@ -159,12 +158,11 @@ def main():
         if erreur:
             st.error(erreur)
         else:
-            idx_client = display_client_info(ID, st.session_state.data)
-            
+            idx_client = display_client_info(ID, df)
             probability_default_payment, prediction = effectuer_prediction(model, X)
             afficher_jauge(probability_default_payment, 0.625)
-            
             st.success(prediction)
+
 
             df_73_copy =df_73[df_73['SK_ID_CURR'] == ID].drop(['SK_ID_CURR'], axis=1)
 
