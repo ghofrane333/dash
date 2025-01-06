@@ -56,13 +56,38 @@ def display_client_info(client, df):
     return idx_client
 
 # Effectuer la prédiction
-def effectuer_prediction(model, X, seuil=0.625):
+def predict_client(ID):
+    seuil = 0.625
+
+    # Vérifier si l'ID existe dans la base de données
+    if df[df['SK_ID_CURR'] == ID].empty:
+        st.error("Ce client n'est pas répertorié")
+        return
+
+    # Extraire les données du client
+    X = df[df['SK_ID_CURR'] == ID].drop(['SK_ID_CURR'], axis=1)
+
+    # Vérifier et réorganiser les colonnes pour correspondre au modèle
+    expected_columns = model.feature_name_
+    missing_cols = set(expected_columns) - set(X.columns)
+    for col in missing_cols:
+        X[col] = 0
+    X = X[expected_columns]
+
+    if X.shape[1] != model.n_features_in_:
+        st.error(f"Nombre de caractéristiques incorrect: attendu {model.n_features_in_}, reçu {X.shape[1]}")
+        return
+
+    # Prédiction
     try:
         probability_default_payment = model.predict_proba(X)[:, 1][0]
-        prediction = "Prêt NON Accordé, risque de défaut" if probability_default_payment >= seuil else "Prêt Accordé"
-        return probability_default_payment, prediction
     except Exception as e:
-        return None, str(e)
+        st.error(f"Erreur lors de la prédiction: {str(e)}")
+        return
+
+    prediction = "Prêt NON Accordé, risque de défaut" if probability_default_payment >= seuil else "Prêt Accordé"
+    st.success(f"Probabilité de défaut de paiement: {probability_default_payment:.4f}")
+    st.write(f"Prédiction: {prediction}")
 
 # Afficher une jauge de score
 def afficher_jauge(score, seuil):
