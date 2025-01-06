@@ -10,7 +10,7 @@ import shap
 
 
 # Charger le modèle
-model_path = os.path.join(os.path.dirname(__file__), 'model', 'lgbm_model.pkl')
+model_path = os.path.join(os.path.dirname(__file__), 'model', 'lgbm_modelee.pkl')
 model = joblib.load(model_path)
 
 # Charger les données
