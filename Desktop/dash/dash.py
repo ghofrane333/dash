@@ -8,8 +8,9 @@ import seaborn as sns
 import plotly.express as px
 import shap
 
+
 # Charger le modèle
-model_path = os.path.join(os.path.dirname(__file__), 'model', 'lgbm_model (2).pkl')
+model_path = os.path.join(os.path.dirname(__file__), 'model', 'lgbm_modelee.pkl')
 model = joblib.load(model_path)
 
 # Charger les données
@@ -56,53 +57,26 @@ def display_client_info(client, df):
     return idx_client
 
 # Effectuer la prédiction
-def predict_client(ID, seuil):
-    # Vérifier si l'ID existe dans la base de données
-    if df[df['SK_ID_CURR'] == ID].empty:
-        st.error("Ce client n'est pas répertorié")
-        return
-
-    # Extraire les données du client
-    X = df[df['SK_ID_CURR'] == ID].drop(['SK_ID_CURR'], axis=1)
-
-    # Vérifier et réorganiser les colonnes pour correspondre au modèle
-    expected_columns = model.feature_name_
-    missing_cols = set(expected_columns) - set(X.columns)
-    for col in missing_cols:
-        X[col] = 0
-    X = X[expected_columns]
-
-    if X.shape[1] != model.n_features_in_:
-        st.error(f"Nombre de caractéristiques incorrect: attendu {model.n_features_in_}, reçu {X.shape[1]}")
-        return
-
-    # Prédiction
+def effectuer_prediction(model, X, seuil=0.6):
     try:
         probability_default_payment = model.predict_proba(X)[:, 1][0]
+        prediction = "Prêt NON Accordé, risque de défaut" if probability_default_payment >= seuil else "Prêt Accordé"
+        return probability_default_payment, prediction
     except Exception as e:
-        st.error(f"Erreur lors de la prédiction: {str(e)}")
-        return
-
-    prediction = "Prêt NON Accordé, risque de défaut" if probability_default_payment >= seuil else "Prêt Accordé"
-    st.success(f"Probabilité de défaut de paiement: {probability_default_payment:.4f}")
-    st.write(f"Prédiction: {prediction}")
-
-    # Afficher la jauge
-    afficher_jauge(probability_default_payment, seuil)
+        return None, str(e)
 
 # Afficher une jauge de score
 def afficher_jauge(score, seuil):
-    fig, ax = plt.subplots(figsize=(6, 3))
+    fig, ax = plt.subplots()
     color = 'red' if score >= seuil else 'green'
     ax.barh([0], [score], color=color)
     ax.set_xlim(0, 1)
     ax.text(score, 0, f"{score:.2f}", ha='center', va='center', color='white', fontsize=12)
     ax.set_title("Probabilité de défaut de paiement", fontsize=14)
-    ax.set_yticks([])
     st.pyplot(fig)
 
-# Fonction pour calculer le nombre de personnes à risque avec un seuil ajusté
-def calculer_risque(df, model, target_percentage=0.08):
+# Fonction pour calculer le nombre de personnes à risque
+def calculer_risque(df, model, seuil=0.6):
     X = df.drop(['SK_ID_CURR'], axis=1)
     # Préparer les données (similaire à la fonction 'verifier_donnees_client')
     expected_columns = model.feature_name_
@@ -113,15 +87,11 @@ def calculer_risque(df, model, target_percentage=0.08):
     
     # Prédire les probabilités de défaut
     probas = model.predict_proba(X)[:, 1]
-    
-    # Calculer le seuil pour obtenir target_percentage des clients à risque
-    seuil = np.percentile(probas, (1 - target_percentage) * 100)
-    
     # Compter le nombre de clients avec une probabilité supérieure au seuil
     clients_risque = np.sum(probas >= seuil)
-    return clients_risque, len(df), probas, seuil
+    return clients_risque, len(df), probas
 
-# Fonction pour calculer les valeurs SHAP
+# Fonction pour créer l'explainer SHAP et calculer les valeurs SHAP
 def compute_shap_values(model, data):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(data)
@@ -152,6 +122,16 @@ def plot_feature_importance(features, importances):
     plt.gca().invert_yaxis()
     st.pyplot(plt)
 
+def plot_waterfall(shap_values, sample_index):
+    if 0 <= sample_index < len(shap_values):
+        fig, ax = plt.subplots()
+        shap.plots.waterfall(shap_values[sample_index], show=False)
+        plt.title("Graphique en cascade pour le client", fontsize=16)
+        plt.tight_layout()
+        st.pyplot(fig)
+    else:
+        st.error(f"L'indice {sample_index} est hors des limites. Veuillez sélectionner un indice valide.")
+
 # Fonction pour afficher un résumé des valeurs SHAP pour toutes les données
 def plot_summary(shap_values, data, feat_number=20):
     plt.figure()
@@ -173,7 +153,7 @@ def main():
 
     # Afficher le nombre de personnes à risque
     if st.button("Calculer le nombre de personnes à risque de paiement"):
-        clients_risque, total_clients, probas, seuil = calculer_risque(df, model, target_percentage=0.08)
+        clients_risque, total_clients, probas = calculer_risque(df, model)
         st.write(f"Nombre total de clients : {total_clients}")
         st.write(f"Nombre de clients avec un risque de défaut supérieur au seuil : {clients_risque}")
         st.write(f"Proportion de clients à risque : {clients_risque / total_clients * 100:.2f}%")
@@ -181,7 +161,7 @@ def main():
         # Optionnel : Afficher un graphique de la distribution des probabilités de défaut
         fig, ax = plt.subplots()
         ax.hist(probas, bins=20, color='skyblue', edgecolor='black')
-        ax.axvline(seuil, color='red', linestyle='--', label=f"Seuil de risque ajusté")
+        ax.axvline(0.625, color='red', linestyle='--', label=f"Seuil de risque (0.625)")
         ax.set_title("Distribution des probabilités de défaut")
         ax.set_xlabel("Probabilité de défaut")
         ax.set_ylabel("Nombre de clients")
@@ -191,8 +171,8 @@ def main():
     unique_features = ['CODE_GENDER', 'NAME_FAMILY_STATUS', 'NAME_INCOME_TYPE', 'NAME_EDUCATION_TYPE']
     selected_feature = st.selectbox("Sélectionnez une caractéristique pour la comparaison :", unique_features)
 
-    ID = st.number_input("Entrez l'ID du client :", min_value=100001, max_value=200000, step=1)
-    
+    ID = st.number_input("Entrez l'ID du client :", min_value=100001)
+
     if st.button("Prédire"):
         print('stdata', st.session_state.data.head())
         X, erreur = verifier_donnees_client(st.session_state.data, ID, model)
@@ -200,7 +180,24 @@ def main():
             st.error(erreur)
         else:
             idx_client = display_client_info(ID, df)
-            predict_client(ID, seuil)  # Appel à la fonction existante pour effectuer la prédiction et afficher les résultats
+            probability_default_payment, prediction = effectuer_prediction(model, X)
+            afficher_jauge(probability_default_payment, 0.6)
+            st.success(prediction)
+
+            df_73_copy =df_73[df_73['SK_ID_CURR'] == ID].drop(['SK_ID_CURR'], axis=1)
+
+            shap_values = compute_shap_values(model, df_73_copy)
+            features, importances = get_top_features(shap_values, st.session_state.data, top_n=20)
+            
+            display_top_features(features, importances)
+            plot_feature_importance(features, importances)
+
+            sample_ind = st.session_state.data.index[st.session_state.data['SK_ID_CURR'] == ID][0]
+            plot_waterfall(shap_values, sample_ind)
+            plot_summary(shap_values, df_73_copy)
+
+            st.subheader(f"Comparaison des caractéristiques des clients par rapport à {selected_feature}")
+            plot_client_comparison(df, selected_feature)
 
 if __name__ == "__main__":
     main()
