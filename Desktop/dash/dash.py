@@ -57,7 +57,7 @@ def display_client_info(client, df):
     return idx_client
 
 # Effectuer la prédiction
-def effectuer_prediction(model, X, seuil=0.6):
+def effectuer_prediction(model, X, seuil=0.625):
     try:
         probability_default_payment = model.predict_proba(X)[:, 1][0]
         prediction = "Prêt NON Accordé, risque de défaut" if probability_default_payment >= seuil else "Prêt Accordé"
@@ -76,7 +76,7 @@ def afficher_jauge(score, seuil):
     st.pyplot(fig)
 
 # Fonction pour calculer le nombre de personnes à risque
-def calculer_risque(df, model, seuil=0.6):
+def calculer_risque(df, model, seuil=0.625):
     X = df.drop(['SK_ID_CURR'], axis=1)
     # Préparer les données (similaire à la fonction 'verifier_donnees_client')
     expected_columns = model.feature_name_
@@ -181,7 +181,7 @@ def main():
         else:
             idx_client = display_client_info(ID, df)
             probability_default_payment, prediction = effectuer_prediction(model, X)
-            afficher_jauge(probability_default_payment, 0.6)
+            afficher_jauge(probability_default_payment, 0.625)
             st.success(prediction)
 
             df_73_copy =df_73[df_73['SK_ID_CURR'] == ID].drop(['SK_ID_CURR'], axis=1)
