@@ -56,9 +56,7 @@ def display_client_info(client, df):
     return idx_client
 
 # Effectuer la prédiction
-def predict_client(ID):
-    seuil = 0.625
-
+def predict_client(ID, seuil):
     # Vérifier si l'ID existe dans la base de données
     if df[df['SK_ID_CURR'] == ID].empty:
         st.error("Ce client n'est pas répertorié")
@@ -103,8 +101,8 @@ def afficher_jauge(score, seuil):
     ax.set_yticks([])
     st.pyplot(fig)
 
-# Fonction pour calculer le nombre de personnes à risque
-def calculer_risque(df, model, seuil=0.625):
+# Fonction pour calculer le nombre de personnes à risque avec un seuil ajusté
+def calculer_risque(df, model, target_percentage=0.08):
     X = df.drop(['SK_ID_CURR'], axis=1)
     # Préparer les données (similaire à la fonction 'verifier_donnees_client')
     expected_columns = model.feature_name_
@@ -115,11 +113,15 @@ def calculer_risque(df, model, seuil=0.625):
     
     # Prédire les probabilités de défaut
     probas = model.predict_proba(X)[:, 1]
+    
+    # Calculer le seuil pour obtenir target_percentage des clients à risque
+    seuil = np.percentile(probas, (1 - target_percentage) * 100)
+    
     # Compter le nombre de clients avec une probabilité supérieure au seuil
     clients_risque = np.sum(probas >= seuil)
-    return clients_risque, len(df), probas
+    return clients_risque, len(df), probas, seuil
 
-# Fonction pour créer l'explainer SHAP et calculer les valeurs SHAP
+# Fonction pour calculer les valeurs SHAP
 def compute_shap_values(model, data):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(data)
@@ -171,7 +173,7 @@ def main():
 
     # Afficher le nombre de personnes à risque
     if st.button("Calculer le nombre de personnes à risque de paiement"):
-        clients_risque, total_clients, probas = calculer_risque(df, model)
+        clients_risque, total_clients, probas, seuil = calculer_risque(df, model, target_percentage=0.08)
         st.write(f"Nombre total de clients : {total_clients}")
         st.write(f"Nombre de clients avec un risque de défaut supérieur au seuil : {clients_risque}")
         st.write(f"Proportion de clients à risque : {clients_risque / total_clients * 100:.2f}%")
@@ -179,7 +181,7 @@ def main():
         # Optionnel : Afficher un graphique de la distribution des probabilités de défaut
         fig, ax = plt.subplots()
         ax.hist(probas, bins=20, color='skyblue', edgecolor='black')
-        ax.axvline(0.625, color='red', linestyle='--', label=f"Seuil de risque (0.625)")
+        ax.axvline(seuil, color='red', linestyle='--', label=f"Seuil de risque ajusté")
         ax.set_title("Distribution des probabilités de défaut")
         ax.set_xlabel("Probabilité de défaut")
         ax.set_ylabel("Nombre de clients")
@@ -198,7 +200,7 @@ def main():
             st.error(erreur)
         else:
             idx_client = display_client_info(ID, df)
-            predict_client(ID)  # Appel à la fonction existante pour effectuer la prédiction et afficher les résultats
+            predict_client(ID, seuil)  # Appel à la fonction existante pour effectuer la prédiction et afficher les résultats
 
 if __name__ == "__main__":
     main()
