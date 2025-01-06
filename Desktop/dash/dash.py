@@ -195,8 +195,8 @@ def main():
     unique_features = ['CODE_GENDER', 'NAME_FAMILY_STATUS', 'NAME_INCOME_TYPE', 'NAME_EDUCATION_TYPE']
     selected_feature = st.selectbox("Sélectionnez une caractéristique pour la comparaison :", unique_features)
 
-    ID = st.number_input("Entrez l'ID du client :", min_value=100001)
-
+    ID = st.number_input("Entrez l'ID du client :", min_value=100001, max_value=200000, step=1)
+    
     if st.button("Prédire"):
         print('stdata', st.session_state.data.head())
         X, erreur = verifier_donnees_client(st.session_state.data, ID, model)
@@ -204,24 +204,7 @@ def main():
             st.error(erreur)
         else:
             idx_client = display_client_info(ID, df)
-            probability_default_payment, prediction = effectuer_prediction(model, X)
-            afficher_jauge(probability_default_payment, 0.625)
-            st.success(prediction)
-
-            df_73_copy =df_73[df_73['SK_ID_CURR'] == ID].drop(['SK_ID_CURR'], axis=1)
-
-            shap_values = compute_shap_values(model, df_73_copy)
-            features, importances = get_top_features(shap_values, st.session_state.data, top_n=20)
-            
-            display_top_features(features, importances)
-            plot_feature_importance(features, importances)
-
-            sample_ind = st.session_state.data.index[st.session_state.data['SK_ID_CURR'] == ID][0]
-            plot_waterfall(shap_values, sample_ind)
-            plot_summary(shap_values, df_73_copy)
-
-            st.subheader(f"Comparaison des caractéristiques des clients par rapport à {selected_feature}")
-            plot_client_comparison(df, selected_feature)
+            predict_client(ID)  # Appel à la fonction existante pour effectuer la prédiction et afficher les résultats
 
 if __name__ == "__main__":
     main()
