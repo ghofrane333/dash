@@ -57,7 +57,7 @@ def display_client_info(client, df):
     return idx_client
 
 # Effectuer la prédiction
-def effectuer_prediction(model, X, seuil=0.6):
+def effectuer_prediction(model, X, seuil=0.625):
     try:
         probability_default_payment = model.predict_proba(X)[:, 1][0]
         prediction = "Prêt NON Accordé, risque de défaut" if probability_default_payment >= seuil else "Prêt Accordé"
@@ -68,28 +68,15 @@ def effectuer_prediction(model, X, seuil=0.6):
 # Afficher une jauge de score
 def afficher_jauge(score, seuil):
     fig, ax = plt.subplots()
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
     color = 'red' if score >= seuil else 'green'
     ax.barh([0], [score], color=color)
-    ax.set_xlim(0, 1)
     ax.text(score, 0, f"{score:.2f}", ha='center', va='center', color='white', fontsize=12)
+    ax.set_xticks(np.arange(0, 1.1, 0.1))
+    ax.set_yticks([])
     ax.set_title("Probabilité de défaut de paiement", fontsize=14)
     st.pyplot(fig)
-
-# Fonction pour calculer le nombre de personnes à risque
-def calculer_risque(df, model, seuil=0.6):
-    X = df.drop(['SK_ID_CURR'], axis=1)
-    # Préparer les données (similaire à la fonction 'verifier_donnees_client')
-    expected_columns = model.feature_name_
-    missing_cols = set(expected_columns) - set(X.columns)
-    for col in missing_cols:
-        X[col] = 0
-    X = X[expected_columns]
-    
-    # Prédire les probabilités de défaut
-    probas = model.predict_proba(X)[:, 1]
-    # Compter le nombre de clients avec une probabilité supérieure au seuil
-    clients_risque = np.sum(probas >= seuil)
-    return clients_risque, len(df), probas
 
 # Fonction pour créer l'explainer SHAP et calculer les valeurs SHAP
 def compute_shap_values(model, data):
@@ -143,6 +130,16 @@ def plot_client_comparison(df, feature):
     fig = px.histogram(df, x=feature, title=f'Comparaison des {feature} pour tous les clients')
     st.plotly_chart(fig)
 
+
+
+# Fonction pour afficher les informations du client
+def modify_client_info(client_id, data):
+    st.write("### Informations du client")
+    st.write(data[data['SK_ID_CURR'] == client_id])
+
+
+
+
 # Fonction principale de l'application Streamlit
 def main():
     st.title("Application de Prédiction de Crédit")
@@ -150,24 +147,7 @@ def main():
     
     if 'data' not in st.session_state:
         st.session_state.data = df.copy()
-
-    # Afficher le nombre de personnes à risque
-    if st.button("Calculer le nombre de personnes à risque de paiement"):
-        clients_risque, total_clients, probas = calculer_risque(df, model)
-        st.write(f"Nombre total de clients : {total_clients}")
-        st.write(f"Nombre de clients avec un risque de défaut supérieur au seuil : {clients_risque}")
-        st.write(f"Proportion de clients à risque : {clients_risque / total_clients * 100:.2f}%")
-        
-        # Optionnel : Afficher un graphique de la distribution des probabilités de défaut
-        fig, ax = plt.subplots()
-        ax.hist(probas, bins=20, color='skyblue', edgecolor='black')
-        ax.axvline(0.625, color='red', linestyle='--', label=f"Seuil de risque (0.625)")
-        ax.set_title("Distribution des probabilités de défaut")
-        ax.set_xlabel("Probabilité de défaut")
-        ax.set_ylabel("Nombre de clients")
-        ax.legend()
-        st.pyplot(fig)
-
+    
     unique_features = ['CODE_GENDER', 'NAME_FAMILY_STATUS', 'NAME_INCOME_TYPE', 'NAME_EDUCATION_TYPE']
     selected_feature = st.selectbox("Sélectionnez une caractéristique pour la comparaison :", unique_features)
 
@@ -179,14 +159,18 @@ def main():
         if erreur:
             st.error(erreur)
         else:
-            idx_client = display_client_info(ID, df)
+            idx_client = display_client_info(ID, st.session_state.data)
+            
             probability_default_payment, prediction = effectuer_prediction(model, X)
-            afficher_jauge(probability_default_payment, 0.6)
+            afficher_jauge(probability_default_payment, 0.625)
+            
             st.success(prediction)
 
             df_73_copy =df_73[df_73['SK_ID_CURR'] == ID].drop(['SK_ID_CURR'], axis=1)
 
             shap_values = compute_shap_values(model, df_73_copy)
+           
+        
             features, importances = get_top_features(shap_values, st.session_state.data, top_n=20)
             
             display_top_features(features, importances)
@@ -196,8 +180,10 @@ def main():
             plot_waterfall(shap_values, sample_ind)
             plot_summary(shap_values, df_73_copy)
 
+
             st.subheader(f"Comparaison des caractéristiques des clients par rapport à {selected_feature}")
-            plot_client_comparison(df, selected_feature)
+            plot_client_comparison(st.session_state.data, selected_feature)
 
 if __name__ == "__main__":
     main()
+
