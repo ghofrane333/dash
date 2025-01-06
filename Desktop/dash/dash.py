@@ -89,14 +89,18 @@ def predict_client(ID):
     st.success(f"Probabilité de défaut de paiement: {probability_default_payment:.4f}")
     st.write(f"Prédiction: {prediction}")
 
+    # Afficher la jauge
+    afficher_jauge(probability_default_payment, seuil)
+
 # Afficher une jauge de score
 def afficher_jauge(score, seuil):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(6, 3))
     color = 'red' if score >= seuil else 'green'
     ax.barh([0], [score], color=color)
     ax.set_xlim(0, 1)
     ax.text(score, 0, f"{score:.2f}", ha='center', va='center', color='white', fontsize=12)
     ax.set_title("Probabilité de défaut de paiement", fontsize=14)
+    ax.set_yticks([])
     st.pyplot(fig)
 
 # Fonction pour calculer le nombre de personnes à risque
@@ -145,16 +149,6 @@ def plot_feature_importance(features, importances):
     plt.title('Top Importances des Caractéristiques (Moyenne SHAP)', fontsize=16)
     plt.gca().invert_yaxis()
     st.pyplot(plt)
-
-def plot_waterfall(shap_values, sample_index):
-    if 0 <= sample_index < len(shap_values):
-        fig, ax = plt.subplots()
-        shap.plots.waterfall(shap_values[sample_index], show=False)
-        plt.title("Graphique en cascade pour le client", fontsize=16)
-        plt.tight_layout()
-        st.pyplot(fig)
-    else:
-        st.error(f"L'indice {sample_index} est hors des limites. Veuillez sélectionner un indice valide.")
 
 # Fonction pour afficher un résumé des valeurs SHAP pour toutes les données
 def plot_summary(shap_values, data, feat_number=20):
