@@ -10,7 +10,7 @@ import shap
 
 
 # Charger le modèle
-model_path = os.path.join(os.path.dirname(__file__), 'model', 'lgbm_modelee.pkl')
+model_path = os.path.join(os.path.dirname(__file__), 'model', 'lgbm_model.pkl')
 model = joblib.load(model_path)
 
 # Charger les données
@@ -57,7 +57,7 @@ def display_client_info(client, df):
     return idx_client
 
 # Effectuer la prédiction
-def effectuer_prediction(model, X, seuil=0.5):
+def effectuer_prediction(model, X, seuil=0.625):
     try:
         probability_default_payment = model.predict_proba(X)[:, 1][0]
         prediction = "Prêt NON Accordé, risque de défaut" if probability_default_payment >= seuil else "Prêt Accordé"
@@ -160,7 +160,7 @@ def main():
         else:
             idx_client = display_client_info(ID, df)
             probability_default_payment, prediction = effectuer_prediction(model, X)
-            afficher_jauge(probability_default_payment, 0.5)
+            afficher_jauge(probability_default_payment, 0.625)
             st.success(prediction)
 
 
